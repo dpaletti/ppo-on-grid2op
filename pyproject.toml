@@ -1,0 +1,14 @@
+[project]
+name = "ppo-on-grid2op"
+version = "0.1.0"
+description = "PPO experiments on grid2op"
+readme = "README.md"
+authors = [
+    { name = "dpaletti", email = "danielepaletti98@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[build-system]
+requires = ["uv_build>=0.8.13,<0.9.0"]
+build-backend = "uv_build"
