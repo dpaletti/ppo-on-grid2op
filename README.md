@@ -1,2 +1,2 @@
-# ppo-on-grid2op
-PPO RL algorithms on Grid2Op
+# PPO on Grid2Op
+Experiments applying PPO algorithms to the Grid2Op RL environment
