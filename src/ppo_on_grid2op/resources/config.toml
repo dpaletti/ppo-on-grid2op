@@ -1,0 +1,21 @@
+models_dir = "models"
+tensorboard_logs_dir = "tensorboard_logs"
+
+# Only keep substation reconfiguration actions
+# Ignore change actions which are dependent on the state of the system
+selected_actions = ["set_bus"]
+
+# Keep all features which are independent of curtailment, redispatching
+# We are only interested in topological reconfiguration
+obs_features = ["day_of_week", "hour_of_day", "minute_of_hour", "prod_p", "prod_v", "load_p", "load_q",
+  "topo_vect", "time_before_cooldown_line",
+  "time_before_cooldown_sub", "rho", "timestep_overflow", "line_status"]
+
+# Regex selecting chronics to pre-load in memory
+# If '.*', do not fliter anything
+chronics_filter = ".*"
+
+use_cuda = true
+
+# Reproducibility seed
+seed = 0
