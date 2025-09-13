@@ -9,9 +9,11 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "grid2op>=1.12.1",
+    "gymnasium>=1.2.0",
     "l2rpn-baselines>=0.8.0",
     "lightsim2grid>=0.10.3",
     "numba>=0.61.2",
+    "numpy>=2.2.6",
     "optuna>=4.5.0",
     "stable-baselines3[extra]>=2.7.0",
     "tensorboard>=2.20.0",
@@ -27,3 +29,13 @@ dev = [
     "ipykernel>=6.30.1",
     "pytest>=8.4.2",
 ]
+
+[tool.pyrefly]
+
+#### configuring what to type check and where to import from
+project-includes = ["src"]
+search-path = ["src"]
+site-package-path = [".venv/lib/python3.13/site-packages"]
+
+
+
