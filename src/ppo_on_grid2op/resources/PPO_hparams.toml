@@ -2,6 +2,7 @@
 # number of neurons in all three MLP layers
 # if 200 is drawn then net_arch will be [200, 200, 200]
 values = [100, 200, 300, 400, 500]
+repeat = 3
 
 [gamma]
 # discount rate

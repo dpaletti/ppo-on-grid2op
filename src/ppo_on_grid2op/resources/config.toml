@@ -1,5 +1,12 @@
+env_name = "l2rpn_case14_sandbox"
+
 models_dir = "models"
 tensorboard_logs_dir = "tensorboard_logs"
+evaluation_logs_dir = "eval_logs"
+tuning_logs_dir = "tuning_logs"
+
+validation_set_percentage = 20
+test_set_percentage = 10
 
 # Only keep substation reconfiguration actions
 # Ignore change actions which are dependent on the state of the system
@@ -13,9 +20,11 @@ obs_features = ["day_of_week", "hour_of_day", "minute_of_hour", "prod_p", "prod_
 
 # Regex selecting chronics to pre-load in memory
 # If '.*', do not fliter anything
-chronics_filter = ".*"
+# Some environment have chronics not numbered but with day-month-year format
+# This filter must be updated accordingly
+chronics_filter = ".*0$" # pre-load 10% of the data in memory (chronics ending in 0)
 
-use_cuda = true
+use_cuda = false
 
 # Reproducibility seed
 seed = 0
