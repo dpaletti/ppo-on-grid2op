@@ -83,7 +83,7 @@ def tune_topological_ppo(
     # Write report
 
     study.trials_dataframe().to_csv(
-        os.path.join(config["tuning_logs"], f"study_{model_class}_{timestamp}.csv")
+        os.path.join(config["tuning_logs_dir"], f"study_{model_class}_{timestamp}.csv")
     )
 
 
