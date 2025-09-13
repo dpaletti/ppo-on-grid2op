@@ -23,7 +23,7 @@ def evaluate_topological_ppo(
     gymenv_kwargs: dict[str, Any] | None = None,
     chronics_filter: str | None = None,
     seed: int | None = None,
-) -> tuple[SB3Agent, list[Any]]:
+) -> list[Any]:
     """Evaluate Topological PPO agent trained with 'train_topological_ppo'
 
     Args:
@@ -43,7 +43,8 @@ def evaluate_topological_ppo(
         seed (int, optional): random seed. Defaults to None.
 
     Returns:
-        tuple[SB3Agent, list[Any]]:returns the evaluated agent and the results as a list of tuples.
+        list[Any]:returns the evaluated agent and the results as a list of tuples.
+
     """
     if isinstance(model, str):
         config = read_config()
@@ -105,18 +106,21 @@ def evaluate_topological_ppo(
             iter_num=None,  # restore the last training iteration
         )
     else:
-        # Need to save and reload into a SB3Agent
-        # Under the SB3Agent there's simply PPO.load, there's a cleaner way for sure.
-        model.save("temp.zip")  # type: ignore
-        grid2op_agent = SB3Agent(
-            env.action_space,
-            env_gym.action_space,
-            env_gym.observation_space,
-            nn_path="temp.zip",
-            gymenv=env_gym,
-            iter_num=None,  # restore the last training iteration
-        )
-        os.remove("temp.zip")
+        if isinstance(model, SB3Agent):
+            grid2op_agent = model
+        else:
+            # Need to save and reload into a SB3Agent
+            # Under the SB3Agent there's simply PPO.load, there's a cleaner way for sure.
+            model.save("temp.zip")  # type: ignore
+            grid2op_agent = SB3Agent(
+                env.action_space,
+                env_gym.action_space,
+                env_gym.observation_space,
+                nn_path="temp.zip",
+                gymenv=env_gym,
+                iter_num=None,  # restore the last training iteration
+            )
+            os.remove("temp.zip")
 
     # Build runner
     runner_params = env.get_params_for_runner()
@@ -146,13 +150,4 @@ def evaluate_topological_ppo(
         pbar=verbose,
     )
 
-    # Print summary
-    if verbose and isinstance(model, str):
-        print("Evaluation summary:")
-        for _, chron_name, cum_reward, nb_time_step, max_ts in res:  # type: ignore [bad-unpacking]
-            msg_tmp = "chronics at: {}".format(chron_name)
-            msg_tmp += "\ttotal score: {:.6f}".format(cum_reward)
-            msg_tmp += "\ttime steps: {:.0f}/{:.0f}".format(nb_time_step, max_ts)
-            print(msg_tmp)
-
-    return grid2op_agent, res
+    return res

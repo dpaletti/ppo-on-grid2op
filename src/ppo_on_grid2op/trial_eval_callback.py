@@ -69,7 +69,7 @@ class TrialEvalCallback(BaseCallback):
 
         if self.n_calls % self.eval_freq == 0:
             # Run custom evaluation
-            _, result = evaluate_topological_ppo(
+            result = evaluate_topological_ppo(
                 self.env_name,
                 self.model,  # type: ignore[bad-argument-type]
                 self.n_eval_episodes,

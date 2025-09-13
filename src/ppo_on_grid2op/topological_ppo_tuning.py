@@ -31,7 +31,28 @@ def tune_topological_ppo(
     model_policy: type[ActorCriticPolicy] = MlpPolicy,
     seed: int = 0,
     verbose: int = 0,
-):
+) -> dict[str, Any]:
+    """Run hyperparameter tuning for a given model type in a given environment.
+    Hyperparameter space is read from a config determined by 'model_class'
+
+    Args:
+        env_name (str): env on which to run the tuning
+        n_trials (int): number of trials to run
+        model_class (str, optional): model class that determines which hyperparam space to read. Defaults to "PPO".
+        reward_class (type[BaseReward], optional): reward to use for training. Defaults to EpisodeDurationReward.
+        n_sampler_startup_trials (int, optional): how many random trials to run before using the samplers. Defaults to 10.
+        min_timesteps_before_pruning (int, optional): how many timesteps to wait before evaluating pruning. Defaults to 1000.
+        max_timesteps_per_trial (int, optional): how many timesteps use to train each trial. Defaults to 10000.
+        hyperband_reduction_factor (int, optional): how aggressive the pruner is (3 = balanced). Defaults to 3.
+        n_eval_episodes (int, optional): how many episodes to average to evaluate the models. Defaults to 5.
+        eval_freq (int, optional): how frequently to evaluate the. Defaults to 1000.
+        model_policy (type[ActorCriticPolicy], optional): Which policy to use for the model. Defaults to MlpPolicy.
+        seed (int, optional): random generators seed. Defaults to 0.
+        verbose (int, optional): how much to log, the higher the value the more logs, 0 means as little as possible. Defaults to 0.
+
+    Returns:
+        dict[str, Any]: best parameter set
+    """
     # setting multivariate TPESampler for possible correlation between learning rate and batch size
     sampler = TPESampler(
         n_startup_trials=n_sampler_startup_trials, seed=seed, multivariate=True
@@ -60,7 +81,6 @@ def tune_topological_ppo(
             n_eval_episodes=n_eval_episodes,
             eval_freq=eval_freq,
             model_policy=model_policy,
-            timestamp=timestamp,
             verbose=verbose,
         ),
         n_trials=n_trials,
@@ -68,23 +88,22 @@ def tune_topological_ppo(
     logging.info("Number of finished trials: ", len(study.trials))
 
     logging.info("Best trial:")
-    trial = study.best_trial
+    best_trial = study.best_trial
 
-    logging.info(f"  Value: {trial.value}")
+    logging.info(f"  Value: {best_trial.value}")
 
     logging.info("  Params: ")
-    for key, value in trial.params.items():
-        logging.info(f"    {key}: {value}")
-
-    logging.info("  User attrs:")
-    for key, value in trial.user_attrs.items():
+    for key, value in best_trial.params.items():
         logging.info(f"    {key}: {value}")
 
     # Write report
 
+    os.makedirs(config["tuning_logs_dir"], exist_ok=True)
     study.trials_dataframe().to_csv(
         os.path.join(config["tuning_logs_dir"], f"study_{model_class}_{timestamp}.csv")
     )
+
+    return best_trial.params
 
 
 def objective(
@@ -97,9 +116,28 @@ def objective(
     n_eval_episodes: int,
     eval_freq: int,
     model_policy: type[ActorCriticPolicy],
-    timestamp: str,
     verbose: int,
 ) -> float:
+    """Objective function that gets maximized.
+
+    Args:
+        trial (Trial): current trial
+        env_name (str): env on which the trial is ran
+        reward_class (type[BaseReward]): reward
+        config (dict[str, Any]): configs to build the callback
+        hparam_space (dict[str, Any]): hyperparameter space for sampling
+        max_training_iterations (int): number of timesteps a single trial gets trained (if not pruned)
+        n_eval_episodes (int): number of episodes to average to score the trial
+        eval_freq (int): how frequently (in steps) a trial score is updated
+        model_policy (type[ActorCriticPolicy]): which policy to use for PPO
+        verbose (int): how much to log, 0 means as little as possible, 3 is the maximum.
+
+    Raises:
+        optuna.exceptions.TrialPruned: _description_
+
+    Returns:
+        float: _description_
+    """
     hyperparameters = _sample_hyperparameters(trial, hparam_space)
     trial_eval_callback = TrialEvalCallback(
         env_name,
@@ -132,7 +170,7 @@ def objective(
             if not hparam_name.startswith("net") and hparam_name != "safe_max_rho"
         },
         callbacks=[trial_eval_callback],
-        prefix_folder=f"tuning_{timestamp}",
+        prefix_folder=f"tuning_trial={trial.number}",
     )
     if trial_eval_callback.is_pruned:
         raise optuna.exceptions.TrialPruned()
