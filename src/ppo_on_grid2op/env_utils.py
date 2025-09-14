@@ -54,7 +54,7 @@ def make_discrete_action_gym_env(
         ValueError: if validation_set_percentage or test_set_percentage is None and the env has not already been split
     """
     try:
-        env = _make_seed_and_preload_grid2op_env(
+        env = make_seed_and_preload_grid2op_env(
             env_name + f"_{suffix}", reward_class, chronics_filter, seed, disable_cache
         )
     except UnknownEnv:
@@ -66,7 +66,7 @@ def make_discrete_action_gym_env(
                 f"Found 'validation_set_percentage'={validation_set_percentage} and test_set_percentage={test_set_percentage}."
                 "Both values must be not None for the env to be created correctly, alternatively split the environment before calling this function."
             )
-        env = _make_seed_and_preload_grid2op_env(
+        env = make_seed_and_preload_grid2op_env(
             env_name, reward_class, chronics_filter, seed, disable_cache
         )
         env.train_val_split_random(
@@ -79,7 +79,7 @@ def make_discrete_action_gym_env(
             " Training set has suffix _train, validation has _val and test has _test"
         )
 
-        env = _make_seed_and_preload_grid2op_env(
+        env = make_seed_and_preload_grid2op_env(
             env_name + f"_{suffix}", reward_class, chronics_filter, seed, disable_cache
         )
 
@@ -104,7 +104,7 @@ def make_discrete_action_gym_env(
     return env_gym, env
 
 
-def _make_seed_and_preload_grid2op_env(
+def make_seed_and_preload_grid2op_env(
     env_name: str,
     reward_class: type[BaseReward],
     chronics_filter: str,
