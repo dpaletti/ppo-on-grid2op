@@ -149,7 +149,7 @@ def train_topological_ppo(
     agent.nn_model.learn(  # type: ignore
         total_timesteps=iterations,
         callback=[checkpoint_callback] + ([] if callbacks is None else callbacks),
-        progress_bar=True if verbose > 0 else False,
+        progress_bar=True,
     )
 
     agent.nn_model.save(os.path.join(model_path, model_name))  # type: ignore[possibly-unbound-attribute]

@@ -1,5 +1,3 @@
-import logging
-
 from grid2op.Reward import EpisodeDurationReward
 from stable_baselines3.ppo import MlpPolicy
 
@@ -8,7 +6,6 @@ from ppo_on_grid2op.topological_ppo_training import train_topological_ppo
 from ppo_on_grid2op.topological_ppo_tuning import tune_topological_ppo
 
 if __name__ == "__main__":
-    logging.getLogger().setLevel(logging.DEBUG)
     env_name = "l2rpn_case14_sandbox"
     reward = EpisodeDurationReward  # returns number of steps seen before blackout
     tuning_timesteps = 1000  # computing poor
@@ -31,7 +28,7 @@ if __name__ == "__main__":
         eval_freq=int(
             tuning_timesteps / 3
         ),  # frequency (in timesteps) of evaluations and subsequent pruning decisions
-        verbose=1,
+        verbose=0,
     )
 
     print("Starting training of the best model.")
@@ -52,7 +49,7 @@ if __name__ == "__main__":
             for param_name, param_value in best_params.items()
             if param_name not in {"safe_max_rho", "net_arch"}
         },  # all other PPO hyperparameters determined in the tuning step
-        verbose=True,
+        verbose=0,
     )
 
     print("Starting evaluation of the best model trained.")
