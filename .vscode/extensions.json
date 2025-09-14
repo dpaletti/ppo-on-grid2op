@@ -1,3 +1,3 @@
 {
-    "recommendations": ["charliermarsh.ruff", "njpwerner.autodocstring", "meta.pyrefly"]
+    "recommendations": ["charliermarsh.ruff", "njpwerner.autodocstring", "meta.pyrefly", "mechatroner.rainbow-csv"]
 }

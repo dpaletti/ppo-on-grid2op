@@ -1,9 +1,9 @@
-# Ignoring tensorboard_logs and models
-# The idea is that you should move to some final folder like models_final/, tensorboard_logs_final/
+# Ignoring intermediate result folders
 # This avoids polluting git
 tensorboard_logs/
 models/
 eval_logs/
+tuning_logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
