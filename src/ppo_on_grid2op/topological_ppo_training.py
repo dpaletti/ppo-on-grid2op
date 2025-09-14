@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from datetime import datetime
 from typing import Any
@@ -142,6 +143,9 @@ def train_topological_ppo(
         name_prefix=model_name,
     )
 
+    logging.info(
+        f"Starting learning for iterations={iterations} with verbosity {verbose}"
+    )
     agent.nn_model.learn(  # type: ignore
         total_timesteps=iterations,
         callback=[checkpoint_callback] + ([] if callbacks is None else callbacks),

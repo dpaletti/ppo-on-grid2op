@@ -140,6 +140,7 @@ def objective(
     Returns:
         float: _description_
     """
+    logging.info(f"Trial {trial.number} starting.")
     hyperparameters = _sample_hyperparameters(trial, hparam_space)
     trial_eval_callback = TrialEvalCallback(
         env_name,
@@ -152,7 +153,7 @@ def objective(
         config["seed"],
         n_eval_episodes,
         eval_freq,
-        verbose,
+        verbose=verbose,
     )
 
     train_topological_ppo(
@@ -174,9 +175,12 @@ def objective(
         callbacks=[trial_eval_callback],
         prefix_folder=f"tuning_{timestamp}",
         model_name_suffix=f"trial={trial.number}",
+        verbose=verbose,
     )
     if trial_eval_callback.is_pruned:
         raise optuna.exceptions.TrialPruned()
+
+    logging.info(f"Trial {trial.number} ending.")
 
     return trial_eval_callback.last_score
 
