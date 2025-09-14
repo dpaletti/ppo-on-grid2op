@@ -14,7 +14,7 @@ if __name__ == "__main__":
     print("Starting hyperparameter tuning.")
     best_params = tune_topological_ppo(
         env_name=env_name,
-        n_trials=50,
+        n_trials=20,  # for demonstration purposes, usually you would run far more trials
         model_class="PPO",
         model_policy=model_policy,
         reward_class=reward,
@@ -26,7 +26,7 @@ if __name__ == "__main__":
         hyperband_reduction_factor=3,  # how aggressive the pruner is (3 = balanced)
         n_eval_episodes=5,  # how many episodes average to evaluate model performance
         eval_freq=int(
-            tuning_timesteps / 3
+            tuning_timesteps / 4
         ),  # frequency (in timesteps) of evaluations and subsequent pruning decisions
         verbose=0,
     )
