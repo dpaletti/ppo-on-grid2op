@@ -24,6 +24,7 @@ if __name__ == "__main__":
         hyperband_reduction_factor=3,  # how aggressive the pruner is (3 = balanced)
         n_eval_episodes=5,  # how many episodes average to evaluate model performance
         eval_freq=1000,  # frequency (in timesteps) of evaluations and subsequent pruning decisions
+        verbose=1,
     )
 
     print("Starting training of the best model.")
@@ -43,6 +44,7 @@ if __name__ == "__main__":
             for param_name, param_value in best_params.items()
             if param_name not in {"safe_max_rho", "net_arch"}
         },  # all other PPO hyperparameters determined in the tuning step
+        verbose=True,
     )
 
     print("Starting evaluation of the best model trained.")
@@ -51,6 +53,7 @@ if __name__ == "__main__":
         model=best_agent_name,
         n_eval_episodes=100,
         reward=reward,
+        verbose=True,
     )
 
     print("Evaluation summary:")

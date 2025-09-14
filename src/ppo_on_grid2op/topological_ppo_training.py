@@ -31,6 +31,7 @@ def train_topological_ppo(
     },
     callbacks: list[BaseCallback] | None = None,
     prefix_folder: str | None = None,
+    model_name_suffix: str | None = None,
     verbose: int = 0,
 ) -> tuple[SB3Agent, str]:
     """Train a PPO agent with only topological actions.
@@ -54,7 +55,8 @@ def train_topological_ppo(
             }
         callbacks (list[BaseCallback], optional): list of callbacks for agent learning. Defaults to None.
         prefix_folder (str, optional): subfolder to create in  model folder, useful for hyperparameter tuning. Defaults to None.
-        verbose (int): verbosity level from 0 onwards. Defaults to 0
+        model_name_suffix (str, optional): name suffix to track specific runs, useful for tuning. Defaults to None, no suffix.
+        verbose (int): verbosity level from 0 onwards. Defaults to 0.
     Returns:
         tuple[SB3Agent, str]: trained agent and agent name
     """
@@ -67,7 +69,7 @@ def train_topological_ppo(
         if prefix_folder is None
         else os.path.join(config["models_dir"], prefix_folder)
     )
-    model_name = f"PPO_env={env_name}_iterations={iterations}_{timestamp}"
+    model_name = f"PPO_{model_name_suffix + '_' if model_name_suffix is not None else ''}env={env_name}_iterations={iterations}_{timestamp}"
     model_path = os.path.join(model_parent_folder, model_name)
 
     gymenv_kwargs = {"safe_max_rho": safe_max_rho}

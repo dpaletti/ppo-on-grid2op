@@ -9,8 +9,7 @@ from grid2op.Reward import BaseReward, EpisodeDurationReward
 from optuna import Trial
 from optuna.pruners import HyperbandPruner
 from optuna.samplers import TPESampler
-from stable_baselines3.a2c.policies import MlpPolicy
-from stable_baselines3.ppo.policies import ActorCriticPolicy
+from stable_baselines3.ppo.policies import ActorCriticPolicy, MlpPolicy
 
 from ppo_on_grid2op.topological_ppo_training import train_topological_ppo
 from ppo_on_grid2op.trial_eval_callback import TrialEvalCallback
@@ -82,6 +81,7 @@ def tune_topological_ppo(
             eval_freq=eval_freq,
             model_policy=model_policy,
             verbose=verbose,
+            timestamp=timestamp,
         ),
         n_trials=n_trials,
     )
@@ -117,6 +117,7 @@ def objective(
     eval_freq: int,
     model_policy: type[ActorCriticPolicy],
     verbose: int,
+    timestamp: str,
 ) -> float:
     """Objective function that gets maximized.
 
@@ -131,6 +132,7 @@ def objective(
         eval_freq (int): how frequently (in steps) a trial score is updated
         model_policy (type[ActorCriticPolicy]): which policy to use for PPO
         verbose (int): how much to log, 0 means as little as possible, 3 is the maximum.
+        timestamp (str): timestamp to create folder for tracking tuning runs
 
     Raises:
         optuna.exceptions.TrialPruned: _description_
@@ -170,7 +172,8 @@ def objective(
             if not hparam_name.startswith("net") and hparam_name != "safe_max_rho"
         },
         callbacks=[trial_eval_callback],
-        prefix_folder=f"tuning_trial={trial.number}",
+        prefix_folder=f"tuning_{timestamp}",
+        model_name_suffix=f"trial={trial.number}",
     )
     if trial_eval_callback.is_pruned:
         raise optuna.exceptions.TrialPruned()

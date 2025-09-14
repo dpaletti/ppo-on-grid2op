@@ -36,12 +36,12 @@ def test_tuning():
 def test_full_training():
     best_params = tune_topological_ppo(
         env_name=TEST_ENV,
-        n_trials=1,
+        n_trials=5,
         model_class="PPO",
-        n_sampler_startup_trials=1,
+        n_sampler_startup_trials=3,
         min_timesteps_before_pruning=10,
         max_timesteps_per_trial=30,
-        n_eval_episodes=1,
+        n_eval_episodes=5,
         eval_freq=15,
         verbose=1,
     )
