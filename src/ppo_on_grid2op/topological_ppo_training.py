@@ -32,7 +32,7 @@ def train_topological_ppo(
     callbacks: list[BaseCallback] | None = None,
     prefix_folder: str | None = None,
     verbose: int = 0,
-) -> SB3Agent:
+) -> tuple[SB3Agent, str]:
     """Train a PPO agent with only topological actions.
     Slight modification and refactoring of https://github.com/Grid2op/l2rpn-baselines/blob/master/l2rpn_baselines/PPO_SB3/train.py
     Main difference is in the ActionSpace which in our case is DiscreteActionSpace and not BoxActionSpace
@@ -56,7 +56,7 @@ def train_topological_ppo(
         prefix_folder (str, optional): subfolder to create in  model folder, useful for hyperparameter tuning. Defaults to None.
         verbose (int): verbosity level from 0 onwards. Defaults to 0
     Returns:
-        SB3Agent: trained agent
+        tuple[SB3Agent, str]: trained agent and agent name
     """
     config = read_config()
     set_random_seed(config["seed"], using_cuda=use_cuda())
@@ -149,4 +149,4 @@ def train_topological_ppo(
     agent.nn_model.save(os.path.join(model_path, model_name))  # type: ignore[possibly-unbound-attribute]
 
     env_gym.close()
-    return agent
+    return agent, model_name

@@ -1,4 +1,3 @@
-# Slight adaptation of https://github.com/gaetanserre/L2RPN-2022_PPO-Baseline/blob/main/src/GymEnvWithRecoWithDNWithShuffle.py
 from typing import Any
 
 from grid2op.Chronics.multiFolder import Multifolder
@@ -11,6 +10,8 @@ class GymEnvWithRecoWithDNWithShuffle(GymEnvWithRecoWithDN):
     Environment with built-in heuristics:
     - reconnect all powerlines whenever possible
     - do nothing until thermal limit (rho) exceeds safe_max_rho
+
+    Slight adaptation of https://github.com/gaetanserre/L2RPN-2022_PPO-Baseline/blob/main/src/GymEnvWithRecoWithDNWithShuffle.py
     """
 
     def __init__(
@@ -31,7 +32,7 @@ class GymEnvWithRecoWithDNWithShuffle(GymEnvWithRecoWithDN):
         return_info: bool = False,
         options: dict[str, Any] | None = None,
     ) -> ObservationWrapper:
-        """Episode reset, shuffle the chronics from time to time.
+        """Episode reset, shuffle the chronics every time all the chronics have been played once.
 
         Args:
             seed (int | None, optional): Randomness reproducibility parameter. Defaults to None.
@@ -42,8 +43,8 @@ class GymEnvWithRecoWithDNWithShuffle(GymEnvWithRecoWithDN):
             ObservationWrapper: first observation of the new episode
         """
         self.nb_reset += 1
-        if isinstance(self.init_env.chronics_handler.real_data, Multifolder):
-            nb_chron = len(self.init_env.chronics_handler.real_data._order)
+        if isinstance(self.init_env.chronics_handler.real_data, Multifolder):  # type: ignore[missing-attribute]
+            nb_chron = len(self.init_env.chronics_handler.real_data._order)  # type: ignore[missing-attribute, bad-argument-type]
             if self.nb_reset % nb_chron == 0:
-                self.init_env.chronics_handler.reset()
-        return super().reset(seed=seed, return_info=return_info, options=options)
+                self.init_env.chronics_handler.reset()  # type: ignore[missing-attribute]
+        return super().reset(seed=seed, return_info=return_info, options=options)  # type: ignore[bad-return]

@@ -103,7 +103,7 @@ def tune_topological_ppo(
         os.path.join(config["tuning_logs_dir"], f"study_{model_class}_{timestamp}.csv")
     )
 
-    return best_trial.params
+    return expand_best_params(best_trial.params, hparam_space)
 
 
 def objective(
@@ -178,6 +178,32 @@ def objective(
     return trial_eval_callback.last_score
 
 
+def expand_best_params(
+    best_params: dict[str, Any], hparam_space: dict[str, Any]
+) -> dict[str, Any]:
+    """Given best_params expand repeated parameters and parameters drawn multiple times.
+    Example: if a parameter is configured with 'repeat=3' it will be drawn once and repeated into a list 3 times.
+             When best parameters are decided only one of the tree will be in output, we need to restore the correct structure
+             to give the parameters as input to the training step.
+
+    Args:
+        best_params (dict[str, Any]): best params tuning output
+        hparam_space (dict[str, Any]): full hyperparameter space
+
+    Returns:
+        dict[str, Any]: best params ready for training input
+    """
+    expanded_best_params: dict[str, Any] = {}
+    for param_name, param_value in best_params.items():
+        if "repeat" in hparam_space[param_name]:
+            expanded_best_params[param_name] = [param_value] * hparam_space[param_name][
+                "repeat"
+            ]
+        else:
+            expanded_best_params[param_name] = param_value
+    return expanded_best_params
+
+
 def _sample_hyperparameters(
     trial: Trial, hparam_space: dict[str, Any]
 ) -> dict[str, Any]:
@@ -207,11 +233,6 @@ def _sample_hyperparameters(
                 )
                 if "repeat" in param_spec:
                     sampled_params[param_name] = [sampled_value] * param_spec["repeat"]
-                elif "n_draws" in param_spec:
-                    sampled_params[param_name] = [sampled_value] + [
-                        trial.suggest_categorical(param_name, param_spec["values"])
-                        for _ in range(param_spec["n_draws"] - 1)
-                    ]
                 else:
                     sampled_params[param_name] = sampled_value
 

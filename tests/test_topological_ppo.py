@@ -36,7 +36,7 @@ def test_tuning():
 def test_full_training():
     best_params = tune_topological_ppo(
         env_name=TEST_ENV,
-        n_trials=10,
+        n_trials=1,
         model_class="PPO",
         n_sampler_startup_trials=1,
         min_timesteps_before_pruning=10,
@@ -46,8 +46,7 @@ def test_full_training():
         verbose=1,
     )
 
-    # TODO: best_params has int for net_arch but it should be [best_param] * repeats
-    best_agent = train_topological_ppo(
+    _, best_agent_name = train_topological_ppo(
         TEST_ENV,
         safe_max_rho=best_params[
             "safe_max_rho"
@@ -63,7 +62,7 @@ def test_full_training():
 
     evaluation = evaluate_topological_ppo(
         TEST_ENV,
-        model=best_agent,
+        model=best_agent_name,
         n_eval_episodes=1,
     )
 

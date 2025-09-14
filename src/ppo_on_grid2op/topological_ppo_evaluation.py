@@ -95,6 +95,7 @@ def evaluate_topological_ppo(
         else chronics_filter,
         extra_configurations["seed"] if seed is None else seed,
         disable_cache=True,
+        disable_shuffle=True,
     )
     if isinstance(model, str):
         grid2op_agent = SB3Agent(
@@ -116,7 +117,7 @@ def evaluate_topological_ppo(
                 env.action_space,
                 env_gym.action_space,
                 env_gym.observation_space,
-                nn_path="temp.zip",
+                nn_path="temp",
                 gymenv=env_gym,
                 iter_num=None,  # restore the last training iteration
             )

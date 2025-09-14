@@ -29,7 +29,7 @@ if __name__ == "__main__":
     print("Starting training of the best model.")
     # Here one could also take over from the hyperparameter tuning
     # For clarity and simplicity I start from scratch
-    best_agent = train_topological_ppo(
+    _, best_agent_name = train_topological_ppo(
         env_name=env_name,
         iterations=tuning_timesteps * 2,  # should be higher but my laptop is crying
         reward=reward,
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     print("Starting evaluation of the best model trained.")
     evaluation = evaluate_topological_ppo(
         env_name=env_name,
-        model=best_agent,
+        model=best_agent_name,
         n_eval_episodes=100,
         reward=reward,
     )
