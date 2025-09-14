@@ -14,7 +14,7 @@ if __name__ == "__main__":
     print("Starting hyperparameter tuning.")
     best_params = tune_topological_ppo(
         env_name=env_name,
-        n_trials=100,
+        n_trials=50,
         model_class="PPO",
         model_policy=model_policy,
         reward_class=reward,
