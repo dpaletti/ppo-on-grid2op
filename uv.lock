@@ -1276,6 +1276,7 @@ dependencies = [
     { name = "numba" },
     { name = "numpy" },
     { name = "optuna" },
+    { name = "sb3-contrib" },
     { name = "stable-baselines3", extra = ["extra"] },
     { name = "tensorboard" },
     { name = "torch" },
@@ -1296,6 +1297,7 @@ requires-dist = [
     { name = "numba", specifier = ">=0.61.2" },
     { name = "numpy", specifier = ">=2.2.6" },
     { name = "optuna", specifier = ">=4.5.0" },
+    { name = "sb3-contrib", specifier = ">=2.7.0" },
     { name = "stable-baselines3", extras = ["extra"], specifier = ">=2.7.0" },
     { name = "tensorboard", specifier = ">=2.20.0" },
     { name = "torch", specifier = ">=2.8.0" },
@@ -1553,6 +1555,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/fe/75/af448d8e52bf1d8fa6a9d089ca6c07ff4453d86c65c145d0a300bb073b9b/rich-14.1.0.tar.gz", hash = "sha256:e497a48b844b0320d45007cdebfeaeed8db2a4f4bcf49f15e455cfc4af11eaa8", size = 224441, upload-time = "2025-07-25T07:32:58.125Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e3/30/3c4d035596d3cf444529e0b2953ad0466f6049528a879d27534700580395/rich-14.1.0-py3-none-any.whl", hash = "sha256:536f5f1785986d6dbdea3c75205c473f970777b4a0d6c6dd1b696aa05a3fa04f", size = 243368, upload-time = "2025-07-25T07:32:56.73Z" },
+]
+
+[[package]]
+name = "sb3-contrib"
+version = "2.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "stable-baselines3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7e/23/2831ccecc8fc2fcda401804f3ed1dc3b81f7c4ad3cb32dc6b1cd79f91c49/sb3_contrib-2.7.0.tar.gz", hash = "sha256:87281ae64e6965e46ac24b58778241d2b07b29996044491267ed844c1a75acfe", size = 90289, upload-time = "2025-07-25T13:02:07.208Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b5/25/df1f407742dca9a649bedcf6f06e74f2306c7854c5ad730497b79e332b99/sb3_contrib-2.7.0-py3-none-any.whl", hash = "sha256:fc5b5cffc7908c7961a73daea8496f5bf2fe69301bc3e7ca71522549eb7feb77", size = 93173, upload-time = "2025-07-25T13:02:04.407Z" },
 ]
 
 [[package]]
