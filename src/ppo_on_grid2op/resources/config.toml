@@ -24,7 +24,7 @@ obs_features = ["day_of_week", "hour_of_day", "minute_of_hour", "prod_p", "prod_
 # This filter must be updated accordingly
 chronics_filter = ".*0$" # pre-load 10% of the data in memory (chronics ending in 0)
 
-use_cuda = false
+use_cuda = true
 
 # Reproducibility seed
 seed = 0
