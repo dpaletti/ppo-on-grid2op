@@ -130,9 +130,7 @@ def evaluate_topological_ppo(
         **runner_params,
         agentClass=None,
         agentInstance=grid2op_agent,
-        mp_context=mp.get_context(
-            "fork"
-        ),  # other contexts do not work due to pickling issues
+        mp_context=mp.get_context("fork") if n_parallel_evaluations > 1 else None,
     )  # type: ignore [missing-argument]
 
     # Run the agent on the scenarios

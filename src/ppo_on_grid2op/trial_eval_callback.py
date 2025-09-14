@@ -69,6 +69,7 @@ class TrialEvalCallback(BaseCallback):
 
         if self.n_calls % self.eval_freq == 0:
             # Run custom evaluation
+            logging.info("Started evaluation.")
             result = evaluate_topological_ppo(
                 self.env_name,
                 self.model,  # type: ignore[bad-argument-type]
@@ -80,6 +81,7 @@ class TrialEvalCallback(BaseCallback):
                 chronics_filter=self.chronics_filter,
                 seed=self.seed,
                 verbose=self.verbose > 0,
+                n_parallel_evaluations=1,
             )
 
             self.eval_idx += 1
@@ -88,6 +90,7 @@ class TrialEvalCallback(BaseCallback):
                 [nb_time_step / max_ts for _, _, _, nb_time_step, max_ts in result]
             ) / len(result)
             self.last_score = score
+            logging.info(f"Evaluation ended with score: {score}")
 
             # Report to Optuna
             self.trial.report(score, self.eval_idx)
