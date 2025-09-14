@@ -6,20 +6,23 @@ from typing import Any
 
 from grid2op.Reward import BaseReward, EpisodeDurationReward
 from l2rpn_baselines.PPO_SB3.utils import SB3Agent, save_used_attribute
+from sb3_contrib.ppo_mask.policies import MaskableActorCriticPolicy
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
 from stable_baselines3.common.utils import set_random_seed
 from stable_baselines3.ppo import MlpPolicy
 from stable_baselines3.ppo.policies import ActorCriticPolicy
 
 from ppo_on_grid2op.env_utils import make_discrete_action_gym_env
+from ppo_on_grid2op.maskable_sb3_agent import MaskableSB3Agent
 from ppo_on_grid2op.utils import read_config, use_cuda
 
 
 def train_topological_ppo(
     env_name: str,
     iterations: int,
+    model_name: str = "PPO",
     reward: type[BaseReward] = EpisodeDurationReward,
-    model_policy: type[ActorCriticPolicy] = MlpPolicy,
+    model_policy: type[ActorCriticPolicy] | type[MaskableActorCriticPolicy] = MlpPolicy,
     safe_max_rho: float = 0.99,
     net_hyperparameters: dict[str, Any] = {
         "net_arch": [100, 100, 100],
@@ -34,6 +37,7 @@ def train_topological_ppo(
     prefix_folder: str | None = None,
     model_name_suffix: str | None = None,
     verbose: int = 0,
+    enable_masking: bool = False,
 ) -> tuple[SB3Agent, str]:
     """Train a PPO agent with only topological actions.
     Slight modification and refactoring of https://github.com/Grid2op/l2rpn-baselines/blob/master/l2rpn_baselines/PPO_SB3/train.py
@@ -42,7 +46,7 @@ def train_topological_ppo(
         env_name (str): environment to train the agent on
         iterations (int): number of training iterations
         reward (type[BaseReward]): what reward to use during training
-        model_policy (type[ActorCriticPolicy]): policy class to use
+        model_policy (type[ActorCriticPolicy] | type[MaskableActorCriticPolicy]): policy class to use
             Defaults to MlpPolicy which is the same default of L2RPN baselines
         safe_max_rho (float): thermal limit over which the agent will take an action to prevent a blackout. Defaults to 0.99.
         learning_rate (float): PPO optimization step size. Defaults to 3e-6
@@ -58,6 +62,7 @@ def train_topological_ppo(
         prefix_folder (str, optional): subfolder to create in  model folder, useful for hyperparameter tuning. Defaults to None.
         model_name_suffix (str, optional): name suffix to track specific runs, useful for tuning. Defaults to None, no suffix.
         verbose (int): verbosity level from 0 onwards. Defaults to 0.
+        enable_masking (bool): whether to enable masking.
     Returns:
         tuple[SB3Agent, str]: trained agent and agent name
     """
@@ -70,7 +75,7 @@ def train_topological_ppo(
         if prefix_folder is None
         else os.path.join(config["models_dir"], prefix_folder)
     )
-    model_name = f"PPO_{model_name_suffix + '_' if model_name_suffix is not None else ''}env={env_name}_iterations={iterations}_{timestamp}"
+    model_name = f"{model_name}_{model_name_suffix + '_' if model_name_suffix is not None else ''}env={env_name}_iterations={iterations}_{timestamp}"
     model_path = os.path.join(model_parent_folder, model_name)
 
     gymenv_kwargs = {"safe_max_rho": safe_max_rho}
@@ -85,6 +90,7 @@ def train_topological_ppo(
         seed=config["seed"],
         validation_set_percentage=config["validation_set_percentage"],
         test_set_percentage=config["test_set_percentage"],
+        enable_masking=enable_masking,
     )
 
     save_used_attribute(
@@ -105,7 +111,7 @@ def train_topological_ppo(
         else os.path.join(config["tensorboard_logs_dir"], prefix_folder)
     )
     nn_kwargs = {
-        "policy": MlpPolicy,
+        "policy": model_policy,
         "env": env_gym,
         "verbose": verbose,
         "tensorboard_log": os.path.join(tensorboard_logs_dir, model_name),
@@ -114,7 +120,8 @@ def train_topological_ppo(
         **agent_hyperparameters,
     }
 
-    agent = SB3Agent(
+    agent_class = SB3Agent if not enable_masking else MaskableSB3Agent
+    agent = agent_class(
         env.action_space,
         env_gym.action_space,
         env_gym.observation_space,

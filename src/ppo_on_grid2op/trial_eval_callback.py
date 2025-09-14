@@ -33,6 +33,7 @@ class TrialEvalCallback(BaseCallback):
         n_eval_episodes: int = 5,
         eval_freq: int = 10000,
         verbose: int = 0,
+        enable_masking: bool = False,
     ) -> None:
         super().__init__(verbose)
 
@@ -52,6 +53,7 @@ class TrialEvalCallback(BaseCallback):
         self.is_pruned = False
         self.last_score = -np.inf
         self.verbose = verbose
+        self.enable_masking = enable_masking
 
     def _on_step(self) -> bool:
         """Perform evaluation and report to Optuna when scheduled.
@@ -82,6 +84,7 @@ class TrialEvalCallback(BaseCallback):
                 seed=self.seed,
                 verbose=self.verbose > 0,
                 n_parallel_evaluations=1,
+                enable_masking=self.enable_masking,
             )
 
             self.eval_idx += 1

@@ -9,10 +9,10 @@ from grid2op.Environment import Environment
 from grid2op.Exceptions import UnknownEnv
 from grid2op.gym_compat import BoxGymObsSpace, DiscreteActSpace, GymEnv
 from grid2op.Reward import BaseReward
-from l2rpn_baselines.utils import GymEnvWithRecoWithDN
 from lightsim2grid import LightSimBackend  # type: ignore[possibly-unbound-import]
 
 from ppo_on_grid2op.env_with_heuristics import GymEnvWithRecoWithDNWithShuffle
+from ppo_on_grid2op.masked_env import MaskedGymEnvWithRecoWithDNWithShuffle
 
 
 def make_discrete_action_gym_env(
@@ -28,6 +28,7 @@ def make_discrete_action_gym_env(
     test_set_percentage: float | None = None,
     disable_cache: bool = False,
     disable_shuffle: bool = False,
+    enable_masking: bool = False,
 ) -> tuple[GymEnv, Environment]:
     """Create environment with 'obs_features' in a BoxSpace encoding and 'selected_actions' in a DiscreteSpace.
     Closely resemble the environment building in https://github.com/Grid2op/l2rpn-baselines/blob/master/l2rpn_baselines/PPO_SB3/train.py
@@ -50,6 +51,7 @@ def make_discrete_action_gym_env(
             Defaults to None.
         disable_cache (bool): whether to disable caching in grid2op environment
         disable_shuffle (bool): whether to disable periodic chronics shuffling, useful for evaluation
+        enable_masking (bool): whether to enable action masking. Defaults to False.
     Raises:
         ValueError: if validation_set_percentage or test_set_percentage is None and the env has not already been split
     """
@@ -84,9 +86,13 @@ def make_discrete_action_gym_env(
         )
 
     env_gym = (
-        GymEnvWithRecoWithDNWithShuffle(env, **gymenv_kwargs)
-        if not disable_shuffle
-        else GymEnvWithRecoWithDN(env, **gymenv_kwargs)
+        GymEnvWithRecoWithDNWithShuffle(
+            env, disable_shuffle=disable_shuffle, **gymenv_kwargs
+        )
+        if not enable_masking
+        else MaskedGymEnvWithRecoWithDNWithShuffle(
+            env_init=env, disable_shuffle=disable_shuffle, **gymenv_kwargs
+        )
     )
 
     env_gym.observation_space = BoxGymObsSpace(

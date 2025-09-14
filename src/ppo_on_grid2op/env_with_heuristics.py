@@ -15,7 +15,13 @@ class GymEnvWithRecoWithDNWithShuffle(GymEnvWithRecoWithDN):
     """
 
     def __init__(
-        self, env_init, *args, reward_cumul="init", safe_max_rho=0.9, **kwargs
+        self,
+        env_init,
+        *args,
+        reward_cumul="init",
+        safe_max_rho=0.9,
+        disable_shuffle: bool = False,
+        **kwargs,
     ):
         super().__init__(
             env_init,
@@ -25,6 +31,7 @@ class GymEnvWithRecoWithDNWithShuffle(GymEnvWithRecoWithDN):
             **kwargs,
         )
         self.nb_reset = 0
+        self.disable_shuffle = disable_shuffle
 
     def reset(
         self,
@@ -42,6 +49,9 @@ class GymEnvWithRecoWithDNWithShuffle(GymEnvWithRecoWithDN):
         Returns:
             ObservationWrapper: first observation of the new episode
         """
+        if self.disable_shuffle:
+            return super().reset(seed=seed, return_info=return_info, options=options)  # type: ignore[bad-return]
+
         self.nb_reset += 1
         if isinstance(self.init_env.chronics_handler.real_data, Multifolder):  # type: ignore[missing-attribute]
             nb_chron = len(self.init_env.chronics_handler.real_data._order)  # type: ignore[missing-attribute, bad-argument-type]

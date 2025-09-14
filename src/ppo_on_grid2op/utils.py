@@ -10,27 +10,32 @@ import torch.cuda
 import ppo_on_grid2op.resources
 
 
-def get_last_model_name() -> str:
+def get_last_model_name(prefix: str = "PPO") -> str:
     """Get last trained model out of the models directory.
     Models are expected to be one per directory and have a name such that
     {name}_env={env_name}_iterations={n_iterations}_%Y-%m-%d_%H:%M:%S
+
+    Args:
+        prefix (str): prefix for searching the model
 
     Returns:
         str: name of the last trained model
     """
     folder_elements = list(Path(read_config()["models_dir"]).iterdir())
     training_dates: list[datetime] = []
+    target_elements = []
     for element in folder_elements:
-        if element.is_dir() and element.stem.split("_")[0] != "tuning":
+        if element.is_dir() and element.stem.startswith(prefix):
             # Each directory contains a model, ignore tuning directories that contain several
             training_dates.append(
                 datetime.strptime(
                     " ".join(element.stem.split("_")[-2:]), "%Y-%m-%d %H:%M:%S"
                 )
             )
+            target_elements.append(element)
 
     last_trained_element = training_dates.index(max(training_dates))
-    return folder_elements[last_trained_element].stem
+    return target_elements[last_trained_element].stem
 
 
 def read_config() -> dict[str, Any]:

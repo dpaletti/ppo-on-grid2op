@@ -8,12 +8,13 @@ from grid2op.Runner import Runner
 from l2rpn_baselines.PPO_SB3.utils import SB3Agent
 
 from ppo_on_grid2op.env_utils import make_discrete_action_gym_env
+from ppo_on_grid2op.maskable_sb3_agent import MaskableSB3Agent
 from ppo_on_grid2op.utils import read_config
 
 
 def evaluate_topological_ppo(
     env_name: str,
-    model: str | SB3Agent,
+    model: str | SB3Agent | MaskableSB3Agent,
     n_eval_episodes: int,
     reward: type[BaseReward] = EpisodeDurationReward,
     n_parallel_evaluations: int = -1,
@@ -23,12 +24,13 @@ def evaluate_topological_ppo(
     gymenv_kwargs: dict[str, Any] | None = None,
     chronics_filter: str | None = None,
     seed: int | None = None,
+    enable_masking: bool = False,
 ) -> list[Any]:
     """Evaluate Topological PPO agent trained with 'train_topological_ppo'
 
     Args:
         env_name (str): env on which to evaluate the agent
-        model (str | SB3Agent): model name of the agent to evaluate or model instance.
+        model (str | SB3Agent | MaskableSB3Agent): model name of the agent to evaluate or model instance.
         If model instance then obs_features, selected_actions, gymenv_kwargs, chronics_filter and seed must be set.
         If model instance is string and any of those parameters is set it is ignored.
         n_eval_episodes (int): number of episodes to run the evaluation on
@@ -41,7 +43,7 @@ def evaluate_topological_ppo(
         gymenv_kwargs (dict[str, Any], optional): heuristics setting. Defaults to None.
         chronics_filter (str, optional): regex to match chronics to preload. Defaults to None.
         seed (int, optional): random seed. Defaults to None.
-
+        enable_masking (bool): whether to load a maskable ppo model. Defaults to False.
     Returns:
         list[Any]:returns the evaluated agent and the results as a list of tuples.
 
@@ -96,9 +98,11 @@ def evaluate_topological_ppo(
         extra_configurations["seed"] if seed is None else seed,
         disable_cache=True,
         disable_shuffle=True,
+        enable_masking=enable_masking,
     )
     if isinstance(model, str):
-        grid2op_agent = SB3Agent(
+        agent_class = SB3Agent if not enable_masking else MaskableSB3Agent
+        grid2op_agent = agent_class(
             env.action_space,
             env_gym.action_space,
             env_gym.observation_space,
@@ -107,13 +111,14 @@ def evaluate_topological_ppo(
             iter_num=None,  # restore the last training iteration
         )
     else:
-        if isinstance(model, SB3Agent):
+        if isinstance(model, SB3Agent) or isinstance(model, MaskableSB3Agent):
             grid2op_agent = model
         else:
             # Need to save and reload into a SB3Agent
             # Under the SB3Agent there's simply PPO.load, there's a cleaner way for sure.
             model.save("temp.zip")  # type: ignore
-            grid2op_agent = SB3Agent(
+            agent_class = SB3Agent if not enable_masking else MaskableSB3Agent
+            grid2op_agent = agent_class(
                 env.action_space,
                 env_gym.action_space,
                 env_gym.observation_space,

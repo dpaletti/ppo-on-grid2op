@@ -9,6 +9,7 @@ from grid2op.Reward import BaseReward, EpisodeDurationReward
 from optuna import Trial
 from optuna.pruners import HyperbandPruner
 from optuna.samplers import TPESampler
+from sb3_contrib.ppo_mask.policies import MaskableActorCriticPolicy
 from stable_baselines3.ppo.policies import ActorCriticPolicy, MlpPolicy
 
 from ppo_on_grid2op.topological_ppo_training import train_topological_ppo
@@ -27,9 +28,10 @@ def tune_topological_ppo(
     hyperband_reduction_factor: int = 3,
     n_eval_episodes: int = 5,
     eval_freq: int = 1000,
-    model_policy: type[ActorCriticPolicy] = MlpPolicy,
+    model_policy: type[ActorCriticPolicy] | type[MaskableActorCriticPolicy] = MlpPolicy,
     seed: int = 0,
     verbose: int = 0,
+    enable_masking: bool = False,
 ) -> dict[str, Any]:
     """Run hyperparameter tuning for a given model type in a given environment.
     Hyperparameter space is read from a config determined by 'model_class'
@@ -48,6 +50,7 @@ def tune_topological_ppo(
         model_policy (type[ActorCriticPolicy], optional): Which policy to use for the model. Defaults to MlpPolicy.
         seed (int, optional): random generators seed. Defaults to 0.
         verbose (int, optional): how much to log, the higher the value the more logs, 0 means as little as possible. Defaults to 0.
+        enable_masking (bool): whether to enable_masking. Defaults to False.
 
     Returns:
         dict[str, Any]: best parameter set
@@ -82,6 +85,7 @@ def tune_topological_ppo(
             model_policy=model_policy,
             verbose=verbose,
             timestamp=timestamp,
+            enable_masking=enable_masking,
         ),
         n_trials=n_trials,
     )
@@ -115,7 +119,8 @@ def objective(
     max_training_iterations: int,
     n_eval_episodes: int,
     eval_freq: int,
-    model_policy: type[ActorCriticPolicy],
+    model_policy: type[ActorCriticPolicy] | type[MaskableActorCriticPolicy],
+    enable_masking: bool,
     verbose: int,
     timestamp: str,
 ) -> float:
@@ -131,11 +136,12 @@ def objective(
         n_eval_episodes (int): number of episodes to average to score the trial
         eval_freq (int): how frequently (in steps) a trial score is updated
         model_policy (type[ActorCriticPolicy]): which policy to use for PPO
+        enable_masking (bool): whether to enable masking
         verbose (int): how much to log, 0 means as little as possible, 3 is the maximum.
         timestamp (str): timestamp to create folder for tracking tuning runs
 
     Raises:
-        optuna.exceptions.TrialPruned: _description_
+        optuna.exceptions.TrialPruned: raised to prune the current trial
 
     Returns:
         float: _description_
@@ -154,6 +160,7 @@ def objective(
         n_eval_episodes,
         eval_freq,
         verbose=verbose,
+        enable_masking=enable_masking,
     )
 
     train_topological_ppo(
@@ -176,6 +183,7 @@ def objective(
         prefix_folder=f"tuning_{timestamp}",
         model_name_suffix=f"trial={trial.number}",
         verbose=verbose,
+        enable_masking=enable_masking,
     )
     if trial_eval_callback.is_pruned:
         raise optuna.exceptions.TrialPruned()
