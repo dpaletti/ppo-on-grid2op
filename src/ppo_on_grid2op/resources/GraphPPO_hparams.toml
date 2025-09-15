@@ -1,7 +1,16 @@
-[net_arch]
-# MLP architecture
-values = [100, 200, 300, 400, 500]
-repeat = 3
+[gnn_features_dim]
+# output dimension of feature extractor
+values = [32, 64, 128, 256]
+
+[gnn_hidden_dim]
+# output dimension of Graph convolutional layer
+# network hidden dimension,
+#  if smaller than features_dim than the network will set features_dim=hidden_dim*2 (due to pooling)
+values = [32, 64, 128, 256]
+
+[gnn_dropout_p]
+# dropout probability after convolutional layer
+values=[0.01, 0.05, 0.1, 0.15, 0.2, 0.3]
 
 [gamma]
 # discount rate

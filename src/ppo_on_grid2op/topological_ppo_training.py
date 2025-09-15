@@ -38,6 +38,7 @@ def train_topological_ppo(
     model_name_suffix: str | None = None,
     verbose: int = 0,
     enable_masking: bool = False,
+    enable_graph: bool = False,
 ) -> tuple[SB3Agent, str]:
     """Train a PPO agent with only topological actions.
     Slight modification and refactoring of https://github.com/Grid2op/l2rpn-baselines/blob/master/l2rpn_baselines/PPO_SB3/train.py
@@ -63,6 +64,7 @@ def train_topological_ppo(
         model_name_suffix (str, optional): name suffix to track specific runs, useful for tuning. Defaults to None, no suffix.
         verbose (int): verbosity level from 0 onwards. Defaults to 0.
         enable_masking (bool): whether to enable masking.
+        enable_graph (bool): whether to enable graph observations (for graph embedding)
     Returns:
         tuple[SB3Agent, str]: trained agent and agent name
     """
@@ -91,6 +93,7 @@ def train_topological_ppo(
         validation_set_percentage=config["validation_set_percentage"],
         test_set_percentage=config["test_set_percentage"],
         enable_masking=enable_masking,
+        enable_graph=enable_graph,
     )
 
     save_used_attribute(

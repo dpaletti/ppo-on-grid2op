@@ -32,6 +32,7 @@ def tune_topological_ppo(
     seed: int = 0,
     verbose: int = 0,
     enable_masking: bool = False,
+    enable_graph: bool = False,
 ) -> dict[str, Any]:
     """Run hyperparameter tuning for a given model type in a given environment.
     Hyperparameter space is read from a config determined by 'model_class'
@@ -51,6 +52,7 @@ def tune_topological_ppo(
         seed (int, optional): random generators seed. Defaults to 0.
         verbose (int, optional): how much to log, the higher the value the more logs, 0 means as little as possible. Defaults to 0.
         enable_masking (bool): whether to enable_masking. Defaults to False.
+        enable_graph (bool): whether to enable graph observations. Defaults to False
 
     Returns:
         dict[str, Any]: best parameter set
@@ -86,6 +88,7 @@ def tune_topological_ppo(
             verbose=verbose,
             timestamp=timestamp,
             enable_masking=enable_masking,
+            enable_graph=enable_graph,
         ),
         n_trials=n_trials,
     )
@@ -121,6 +124,7 @@ def objective(
     eval_freq: int,
     model_policy: type[ActorCriticPolicy] | type[MaskableActorCriticPolicy],
     enable_masking: bool,
+    enable_graph: bool,
     verbose: int,
     timestamp: str,
 ) -> float:
@@ -137,6 +141,7 @@ def objective(
         eval_freq (int): how frequently (in steps) a trial score is updated
         model_policy (type[ActorCriticPolicy]): which policy to use for PPO
         enable_masking (bool): whether to enable masking
+        enable_graph (bool): whether to enable graph observations
         verbose (int): how much to log, 0 means as little as possible, 3 is the maximum.
         timestamp (str): timestamp to create folder for tracking tuning runs
 
@@ -161,7 +166,10 @@ def objective(
         eval_freq,
         verbose=verbose,
         enable_masking=enable_masking,
+        enable_graph=enable_graph,
     )
+
+    net_hparams, agent_hparams = split_net_and_agent_params(hyperparameters)
 
     train_topological_ppo(
         env_name,
@@ -169,21 +177,14 @@ def objective(
         reward=reward_class,
         model_policy=model_policy,
         safe_max_rho=hyperparameters["safe_max_rho"],
-        net_hyperparameters={
-            hparam_name: hparam_value
-            for hparam_name, hparam_value in hyperparameters.items()
-            if hparam_name.startswith("net")
-        },
-        agent_hyperparameters={
-            hparam_name: hparam_value
-            for hparam_name, hparam_value in hyperparameters.items()
-            if not hparam_name.startswith("net") and hparam_name != "safe_max_rho"
-        },
+        net_hyperparameters=net_hparams,
+        agent_hyperparameters=agent_hparams,
         callbacks=[trial_eval_callback],
         prefix_folder=f"tuning_{timestamp}",
         model_name_suffix=f"trial={trial.number}",
         verbose=verbose,
         enable_masking=enable_masking,
+        enable_graph=enable_graph,
     )
     if trial_eval_callback.is_pruned:
         raise optuna.exceptions.TrialPruned()
@@ -271,3 +272,21 @@ def _sample_hyperparameters(
         )
 
     return sampled_params
+
+
+def split_net_and_agent_params(
+    hyperparameters: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    net_hyperparameters = {
+        hparam_name.replace("gnn_", ""): hparam_value
+        for hparam_name, hparam_value in hyperparameters.items()
+        if hparam_name.startswith("net") or hparam_name.startswith("gnn")
+    }
+    agent_hyperparameters = {
+        hparam_name: hparam_value
+        for hparam_name, hparam_value in hyperparameters.items()
+        if not hparam_name.startswith("net")
+        and hparam_name != "safe_max_rho"
+        and not hparam_name.startswith("gnn")
+    }
+    return net_hyperparameters, agent_hyperparameters

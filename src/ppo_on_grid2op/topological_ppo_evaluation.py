@@ -25,6 +25,7 @@ def evaluate_topological_ppo(
     chronics_filter: str | None = None,
     seed: int | None = None,
     enable_masking: bool = False,
+    enable_graph: bool = False,
 ) -> list[Any]:
     """Evaluate Topological PPO agent trained with 'train_topological_ppo'
 
@@ -44,6 +45,7 @@ def evaluate_topological_ppo(
         chronics_filter (str, optional): regex to match chronics to preload. Defaults to None.
         seed (int, optional): random seed. Defaults to None.
         enable_masking (bool): whether to load a maskable ppo model. Defaults to False.
+        enable_graph (bool): whether to use graph observations
     Returns:
         list[Any]:returns the evaluated agent and the results as a list of tuples.
 
@@ -99,6 +101,7 @@ def evaluate_topological_ppo(
         disable_cache=True,
         disable_shuffle=True,
         enable_masking=enable_masking,
+        enable_graph=enable_graph,
     )
     if isinstance(model, str):
         agent_class = SB3Agent if not enable_masking else MaskableSB3Agent

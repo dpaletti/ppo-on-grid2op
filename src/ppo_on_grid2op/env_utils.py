@@ -12,6 +12,7 @@ from grid2op.Reward import BaseReward
 from lightsim2grid import LightSimBackend  # type: ignore[possibly-unbound-import]
 
 from ppo_on_grid2op.env_with_heuristics import GymEnvWithRecoWithDNWithShuffle
+from ppo_on_grid2op.graph_gym_obs_space import GraphGymObsSpace
 from ppo_on_grid2op.masked_env import MaskedGymEnvWithRecoWithDNWithShuffle
 
 
@@ -29,6 +30,7 @@ def make_discrete_action_gym_env(
     disable_cache: bool = False,
     disable_shuffle: bool = False,
     enable_masking: bool = False,
+    enable_graph: bool = False,
 ) -> tuple[GymEnv, Environment]:
     """Create environment with 'obs_features' in a BoxSpace encoding and 'selected_actions' in a DiscreteSpace.
     Closely resemble the environment building in https://github.com/Grid2op/l2rpn-baselines/blob/master/l2rpn_baselines/PPO_SB3/train.py
@@ -52,6 +54,7 @@ def make_discrete_action_gym_env(
         disable_cache (bool): whether to disable caching in grid2op environment
         disable_shuffle (bool): whether to disable periodic chronics shuffling, useful for evaluation
         enable_masking (bool): whether to enable action masking. Defaults to False.
+        enable_graph (bool): whether to enable graph observations. Defaults to False
     Raises:
         ValueError: if validation_set_percentage or test_set_percentage is None and the env has not already been split
     """
@@ -95,13 +98,23 @@ def make_discrete_action_gym_env(
         )
     )
 
-    env_gym.observation_space = BoxGymObsSpace(
-        env.observation_space,
-        attr_to_keep=obs_features,
-    )
-
-    for obs_feature in obs_features:
-        env_gym.observation_space.normalize_attr(obs_feature)
+    if not enable_graph:
+        env_gym.observation_space = BoxGymObsSpace(
+            env.observation_space,
+            attr_to_keep=obs_features,
+        )
+        for obs_feature in obs_features:
+            env_gym.observation_space.normalize_attr(obs_feature)
+    else:
+        graph = env.reset().get_energy_graph()
+        env_gym.observation_space = GraphGymObsSpace(
+            grid2op_observation_space=env.observation_space,
+            attr_to_keep=obs_features,
+            n_nodes=env.n_sub * env.n_busbar_per_sub,
+            n_edges=env.n_line,
+            node_feature_space_size=len(graph.nodes[0]),
+            edge_feature_space_size=len(graph.edges[[e for e in graph.edges][0]]),
+        )  # already normalized
 
     env_gym.action_space = DiscreteActSpace(
         env.action_space, attr_to_keep=selected_actions
