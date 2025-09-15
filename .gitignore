@@ -4,6 +4,7 @@ tensorboard_logs/
 models/
 eval_logs/
 tuning_logs/
+!presentation_data/eval_logs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

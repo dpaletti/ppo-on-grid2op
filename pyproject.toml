@@ -30,6 +30,7 @@ build-backend = "uv_build"
 dev = [
     "ipykernel>=6.30.1",
     "pytest>=8.4.2",
+    "tqdm>=4.67.1",
 ]
 
 [tool.pyrefly]
