@@ -72,7 +72,16 @@ class GraphGymObsSpace(BoxGymObsSpace):  # type: ignore
 
     @staticmethod
     def _normalize_feature_matrix(m: np.ndarray) -> np.ndarray:
-        return (m - m.mean(0)) / np.ptp(m, 0)  # type: ignore
+        means = m.mean(0)
+        ptp_vals = np.ptp(m, 0)
+
+        result = np.zeros_like(m)
+
+        mask = ptp_vals != 0
+        result[:, mask] = (m[:, mask] - means[mask]) / ptp_vals[mask]
+
+        # Columns with no variation become 0 (already initialized)
+        return result
 
     def _flatten_graph_to_template(
         self,
