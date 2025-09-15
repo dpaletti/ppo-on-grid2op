@@ -17,7 +17,7 @@ def evaluate_topological_ppo(
     model: str | SB3Agent | MaskableSB3Agent,
     n_eval_episodes: int,
     reward: type[BaseReward] = EpisodeDurationReward,
-    n_parallel_evaluations: int = -1,
+    n_parallel_evaluations: int = 1,
     verbose: bool = True,
     obs_features: list[str] | None = None,
     selected_actions: list[str] | None = None,
