@@ -39,12 +39,14 @@ def test_train():
 
 
 def test_evaluate():
+    # TODO:
     evaluate_topological_ppo(
         env_name=TEST_ENV,
-        model=get_last_model_name("GraphPPO"),
-        n_eval_episodes=10,
+        model=get_last_model_name("RewardMaskableGraphPPO"),
+        n_eval_episodes=100,
         n_parallel_evaluations=1,  # -1 deadlocks (probaby due to GNN)
         enable_graph=True,
+        enable_masking=True,
         verbose=True,
     )
 
