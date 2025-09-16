@@ -25,7 +25,7 @@ For an even closer reproduction to how the results were actually computed in the
 If one does not want to rerun all the jobs training and evaluation data are available under `presentation_data/`. Model zips are available upon request due to their size.
 
 ## Project map
-All the code lives in `src/ppo_on_grid2op` so as to be in a packageable form in case it is needed to push it a python index for distribution.
+All the code lives in `src/ppo_on_grid2op` so as to be in a packageable form supported by python package indexes.
 
 The most important custom implementations are:
 - `gnn_policy.py`: a stable-baselines actor-critic policy that works both for maskable and vanilla PPO
