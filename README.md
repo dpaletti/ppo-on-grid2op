@@ -1,5 +1,5 @@
 # PPO on Grid2Op
-Experiments applying PPO algorithms to the Grid2Op RL environment.
+Experiments applying PPO algorithms to the Grid2Op RL environment. See the [slideshow](presentation.pdf) for a high-level view of the work done.
 
 ## Reproducing the results
 Clone the repository:
